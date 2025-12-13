@@ -1,0 +1,163 @@
+.child-select-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.child-select-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.back-button {
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.page-header h1 {
+  font-size: 36px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.page-header p {
+  color: #666;
+  font-size: 18px;
+}
+
+.children-select-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.child-select-card {
+  text-align: center;
+  padding: 32px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.child-select-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.child-select-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  margin: 0 auto 16px;
+}
+
+.child-select-card h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.child-select-card > p {
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.child-select-stats {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 14px;
+  color: #666;
+}
+
+.vr-code-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.vr-code-card {
+  max-width: 500px;
+  width: 100%;
+  padding: 48px;
+  text-align: center;
+}
+
+.vr-code-icon {
+  margin-bottom: 24px;
+  color: #10b981;
+  display: flex;
+  justify-content: center;
+}
+
+.vr-code-card h2 {
+  font-size: 24px;
+  margin-bottom: 32px;
+  color: #333;
+}
+
+.vr-code-display {
+  font-size: 64px;
+  font-weight: bold;
+  letter-spacing: 8px;
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 24px;
+  padding: 24px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  border: 3px dashed #10b981;
+}
+
+.vr-code-instruction {
+  color: #666;
+  margin-bottom: 32px;
+  font-size: 16px;
+}
+
+.vr-code-info {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.vr-code-info p {
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.vr-code-info p:last-child {
+  margin-bottom: 0;
+}
+
+.vr-code-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.vr-code-actions .btn {
+  flex: 1;
+}
+
+.error-message {
+  text-align: center;
+  padding: 40px;
+  color: #c33;
+  font-size: 18px;
+}
+

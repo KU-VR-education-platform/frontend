@@ -144,7 +144,7 @@ function MainPage({ user, onLogout }) {
 
       <footer className="footer">
         <div className="container">
-          <p>&copy; 2024 VR 교육 플랫폼. All rights reserved.</p>
+          <p>&copy; 2025 VR 교육 플랫폼. All rights reserved.</p>
         </div>
       </footer>
     </div>

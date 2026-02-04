@@ -5,3 +5,8 @@ export const getReportsByChildId = async (childId) => {
     const response = await axios.get(`/reports/child/${childId}`)
     return response.data
 }
+// 특정 리포트 상세 조회
+export const getReportById = async (reportId) => {
+    const response = await axios.get(`/reports/${reportId}`)
+    return response.data
+}

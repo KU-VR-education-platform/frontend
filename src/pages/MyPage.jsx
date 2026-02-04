@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { dummyChildren, getAllChildResults } from '../data/dummyData'
+import { getMyChildren, createChild } from '../api/child'
 import { FaChartBar, FaFileAlt } from 'react-icons/fa'
 import './MyPage.css'
 
@@ -8,18 +8,48 @@ function MyPage({ user }) {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('children') // 'children' or 'results'
   const [selectedChild, setSelectedChild] = useState(null)
+
+  // Child Form State
+  const [children, setChildren] = useState([])
   const [newChildName, setNewChildName] = useState('')
-  const [newChildAge, setNewChildAge] = useState('')
+  const [newChildBirthDate, setNewChildBirthDate] = useState('')
+  const [newChildMemo, setNewChildMemo] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
 
-  const handleAddChild = (e) => {
+  // Fetch children on mount
+  useEffect(() => {
+    fetchChildren()
+  }, [])
+
+  const fetchChildren = async () => {
+    try {
+      const response = await getMyChildren()
+      // response가 Page 객체일 경우 content 배열 사용
+      setChildren(response.content || [])
+    } catch (error) {
+      console.error('Failed to fetch children', error)
+    }
+  }
+
+  const handleAddChild = async (e) => {
     e.preventDefault()
-    if (newChildName && newChildAge) {
-      // 더미 데이터 추가 (실제로는 API 호출)
-      alert(`${newChildName} 아이가 추가되었습니다!`)
-      setNewChildName('')
-      setNewChildAge('')
-      setShowAddForm(false)
+    if (newChildName && newChildBirthDate) {
+      try {
+        await createChild({
+          name: newChildName,
+          birthDate: newChildBirthDate,
+          memo: newChildMemo
+        })
+        alert(`${newChildName} 아이가 추가되었습니다!`)
+        setNewChildName('')
+        setNewChildBirthDate('')
+        setNewChildMemo('')
+        setShowAddForm(false)
+        fetchChildren() // 목록 갱신
+      } catch (error) {
+        console.error('Failed to create child', error)
+        alert('아이 추가에 실패했습니다.')
+      }
     }
   }
 
@@ -28,7 +58,8 @@ function MyPage({ user }) {
     setActiveTab('results')
   }
 
-  const allResults = selectedChild ? getAllChildResults(selectedChild) : []
+  // 학습 기록은 현재 백엔드 미구현이므로 빈 배열 처리
+  const allResults = []
 
   return (
     <div className="mypage">
@@ -93,16 +124,23 @@ function MyPage({ user }) {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">나이</label>
+                  <label className="form-label">생년월일</label>
                   <input
-                    type="number"
+                    type="date"
                     className="form-input"
-                    placeholder="나이"
-                    value={newChildAge}
-                    onChange={(e) => setNewChildAge(e.target.value)}
-                    min="1"
-                    max="18"
+                    value={newChildBirthDate}
+                    onChange={(e) => setNewChildBirthDate(e.target.value)}
                     required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">메모 (선택)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="예: 특이사항 등"
+                    value={newChildMemo}
+                    onChange={(e) => setNewChildMemo(e.target.value)}
                   />
                 </div>
                 <button type="submit" className="btn btn-primary">
@@ -112,43 +150,48 @@ function MyPage({ user }) {
             )}
 
             <div className="children-grid">
-              {dummyChildren.map((child) => (
-                <div key={child.id} className="child-card card">
-                  <div className="child-header">
-                    <div className="child-avatar">
-                      {child.name.charAt(0)}
+              {children.length === 0 ? (
+                <div className="empty-message">등록된 아이가 없습니다.</div>
+              ) : (
+                children.map((child) => (
+                  <div key={child.childId} className="child-card card">
+                    <div className="child-header">
+                      <div className="child-avatar">
+                        {child.name.charAt(0)}
+                      </div>
+                      <div className="child-info">
+                        <h3>{child.name}</h3>
+                        <p>생일: {child.birthDate}</p>
+                      </div>
                     </div>
-                    <div className="child-info">
-                      <h3>{child.name}</h3>
-                      <p>나이: {child.age}세</p>
+                    {/* 통계 데이터는 현재 API에 없으므로 숨기거나 고정값 */}
+                    <div className="child-stats">
+                      <div className="stat">
+                        <span className="stat-label">초대 코드</span>
+                        <span className="stat-value">{child.inviteCode || '-'}</span>
+                      </div>
+                      <div className="stat">
+                        <span className="stat-label">메모</span>
+                        <span className="stat-value">{child.memo || '-'}</span>
+                      </div>
+                    </div>
+                    <div className="child-actions">
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => handleViewResults(child.childId)}
+                      >
+                        기록 보기
+                      </button>
+                      <Link
+                        to="/scenario-select"
+                        className="btn btn-secondary"
+                      >
+                        시나리오 시작
+                      </Link>
                     </div>
                   </div>
-                  <div className="child-stats">
-                    <div className="stat">
-                      <span className="stat-label">완료한 시나리오</span>
-                      <span className="stat-value">{child.total_scenarios}개</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-label">평균 점수</span>
-                      <span className="stat-value">{child.average_score}점</span>
-                    </div>
-                  </div>
-                  <div className="child-actions">
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => handleViewResults(child.id)}
-                    >
-                      기록 보기
-                    </button>
-                    <Link
-                      to="/scenario-select"
-                      className="btn btn-secondary"
-                    >
-                      시나리오 시작
-                    </Link>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}
@@ -179,36 +222,13 @@ function MyPage({ user }) {
               </div>
             ) : (
               <div className="results-list">
-                {allResults.length === 0 ? (
-                  <div className="empty-state">
-                    <div className="empty-state-icon">
-                      <FaFileAlt size={64} />
-                    </div>
-                    <p>아직 완료한 시나리오가 없습니다.</p>
+                {/* 백엔드 API 미구현으로 Empty State 표시 */}
+                <div className="empty-state">
+                  <div className="empty-state-icon">
+                    <FaFileAlt size={64} />
                   </div>
-                ) : (
-                  allResults.map((result) => (
-                    <div key={result.id} className="result-card card">
-                      <div className="result-header">
-                        <h3>{result.scenario_name}</h3>
-                        <div className="result-score">
-                          <span className="score">{result.score}</span>
-                          <span className="score-label">점</span>
-                        </div>
-                      </div>
-                      <div className="result-meta">
-                        <span>완료일: {new Date(result.completed_at).toLocaleString('ko-KR')}</span>
-                        <span>소요시간: {Math.floor(result.duration / 60)}분 {result.duration % 60}초</span>
-                      </div>
-                      <Link
-                        to={`/scenario-detail/${result.child_id}/${result.scenario_id}?resultId=${result.id}`}
-                        className="btn btn-primary"
-                      >
-                        상세 보기
-                      </Link>
-                    </div>
-                  ))
-                )}
+                  <p>아직 완료한 시나리오가 없거나 기록을 불러올 수 없습니다.</p>
+                </div>
               </div>
             )}
           </div>

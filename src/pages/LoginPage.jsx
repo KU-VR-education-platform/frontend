@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FaGoogle, FaComment } from 'react-icons/fa'
+import { login } from '../api/auth'
+import { getMyInfo } from '../api/user'
 import './LoginPage.css'
 
 function LoginPage({ onLogin }) {
@@ -19,59 +21,45 @@ function LoginPage({ onLogin }) {
     setError('')
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    // 더미 로그인 로직
+
     if (!formData.email || !formData.password) {
       setError('이메일과 비밀번호를 입력해주세요.')
       return
     }
 
-    // 특정 계정으로 로그인
-    if (formData.email === 'parent@naver.com' && formData.password === 'P@ssw0rd') {
-      const userData = {
-        id: 'user_001',
-        email: formData.email,
-        name: '이부모',
-        role: 'parent',
-        created_at: '2024-01-01'
+    try {
+      // 1. 로그인 요청
+      const tokenResponse = await login(formData.email, formData.password)
+
+      // 2. 토큰 임시 저장 (axios interceptor용)
+      localStorage.setItem('user', JSON.stringify(tokenResponse))
+
+      // 3. 내 정보 조회
+      const userInfo = await getMyInfo()
+
+      // 4. 유저 정보 통합 및 저장
+      // MainPage에서 user.name을 사용하므로 nickname을 name으로 매핑
+      const fullUserData = {
+        ...tokenResponse,
+        ...userInfo,
+        name: userInfo.nickname // 매핑 추가
       }
-      onLogin(userData)
+
+      onLogin(fullUserData)
       navigate('/')
-    } else if (formData.email === 'teacher@naver.com' && formData.password === 'P@ssw0rd') {
-      const userData = {
-        id: 'user_002',
-        email: formData.email,
-        name: '김선생',
-        role: 'teacher',
-        created_at: '2024-01-01'
-      }
-      onLogin(userData)
-      navigate('/')
-    } else {
+    } catch (err) {
+      console.error(err)
+      localStorage.removeItem('user') // 실패 시 임시 토큰 삭제
       setError('이메일 또는 비밀번호가 올바르지 않습니다.')
     }
   }
 
   const handleOAuthLogin = (provider) => {
-    // OAuth 로그인 처리 (더미)
-    // 실제로는 해당 OAuth 제공자의 인증 페이지로 리다이렉트
+    // OAuth 로그인 처리 (아직 백엔드 연동 전이라면 더미 유지 또는 수정 필요)
     console.log(`${provider} OAuth 로그인 시도`)
-    
-    // 더미 OAuth 로그인 - 실제로는 OAuth 인증 플로우를 거쳐야 함
-    // 여기서는 간단히 로그인 처리
-    const userData = {
-      id: `oauth_${provider}_001`,
-      email: `${provider}@example.com`,
-      name: provider === 'google' ? '구글 사용자' : provider === 'naver' ? '네이버 사용자' : '카카오 사용자',
-      role: 'parent', // 기본값, 실제로는 OAuth 응답에서 가져옴
-      created_at: '2024-01-01',
-      oauth_provider: provider
-    }
-    
-    onLogin(userData)
-    navigate('/')
+    alert('SNS 로그인은 준비 중입니다.')
   }
 
   return (
@@ -96,10 +84,10 @@ function LoginPage({ onLogin }) {
             <div className="form-group">
               <label className="form-label">이메일</label>
               <input
-                type="email"
+                type="text" // 이메일 형식이 아닐 수도 있으므로 text로 변경 (userId)
                 name="email"
                 className="form-input"
-                placeholder="이메일을 입력하세요"
+                placeholder="아이디(이메일)를 입력하세요"
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -167,11 +155,6 @@ function LoginPage({ onLogin }) {
                 회원가입
               </Link>
             </p>
-            <div className="demo-accounts">
-              <p className="demo-title">테스트 계정:</p>
-              <p className="demo-account">부모님: parent@naver.com / P@ssw0rd</p>
-              <p className="demo-account">교육자: teacher@naver.com / P@ssw0rd</p>
-            </div>
           </div>
         </div>
       </div>

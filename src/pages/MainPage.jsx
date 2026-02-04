@@ -1,10 +1,25 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { scenarios } from '../data/dummyData'
+import { getScenarios } from '../api/scenario'
 import ScenarioIcon from '../components/ScenarioIcon'
 import { FaGraduationCap, FaChartLine, FaUsers, FaVrCardboard, FaClock } from 'react-icons/fa'
 import './MainPage.css'
 
 function MainPage({ user, onLogout }) {
+  const [scenarios, setScenarios] = useState([])
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await getScenarios()
+        setScenarios(data)
+      } catch (error) {
+        console.error('Failed to fetch scenarios', error)
+      }
+    }
+    fetchData()
+  }, [])
+
   return (
     <div className="main-page">
       <header className="header">
@@ -102,7 +117,8 @@ function MainPage({ user, onLogout }) {
                 <div className="scenario-icon">
                   <ScenarioIcon type={scenario.iconType} size={64} />
                 </div>
-                <h3 className="scenario-name">{scenario.name}</h3>
+                {/* 백엔드는 title 사용, 프론트 기존 name 사용. title로 변경 */}
+                <h3 className="scenario-name">{scenario.title || scenario.name}</h3>
                 <p className="scenario-description">{scenario.description}</p>
                 <div className="scenario-meta">
                   <span className="badge badge-info">{scenario.difficulty}</span>
@@ -134,7 +150,7 @@ function MainPage({ user, onLogout }) {
                 <div className="content-icon">
                   <ScenarioIcon type={scenario.iconType} size={48} />
                 </div>
-                <h4>{scenario.name}</h4>
+                <h4>{scenario.title || scenario.name}</h4>
                 <p>VR 시뮬레이션</p>
               </div>
             ))}

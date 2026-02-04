@@ -1,10 +1,35 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { scenarios } from '../data/dummyData'
+import { getScenarios } from '../api/scenario'
 import ScenarioIcon from '../components/ScenarioIcon'
 import { FaClock, FaArrowRight } from 'react-icons/fa'
 import './ScenarioSelectPage.css'
 
 function ScenarioSelectPage({ user }) {
+  const [scenarios, setScenarios] = useState([])
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await getScenarios()
+        setScenarios(data)
+      } catch (e) { console.error(e) }
+    }
+    fetchData()
+  }, [])
+
+  const getStepsArray = (steps) => {
+    if (Array.isArray(steps)) return steps
+    if (typeof steps === 'string') {
+      try {
+        return JSON.parse(steps)
+      } catch (e) {
+        return []
+      }
+    }
+    return []
+  }
+
   return (
     <div className="scenario-select-page">
       <header className="header">
@@ -27,41 +52,44 @@ function ScenarioSelectPage({ user }) {
         </div>
 
         <div className="scenarios-list">
-          {scenarios.map((scenario) => (
-            <Link
-              key={scenario.id}
-              to={`/child-select/${scenario.id}`}
-              className="scenario-item card"
-            >
-              <div className="scenario-item-icon">
-                <ScenarioIcon type={scenario.iconType} size={80} />
-              </div>
-              <div className="scenario-item-content">
-                <h2>{scenario.name}</h2>
-                <p>{scenario.description}</p>
-                <div className="scenario-item-meta">
-                  <span className="badge badge-info">{scenario.difficulty}</span>
-                  <span className="scenario-item-time">
-                    <FaClock size={14} /> {scenario.estimatedTime}
-                  </span>
+          {scenarios.map((scenario) => {
+            const steps = getStepsArray(scenario.steps)
+            return (
+              <Link
+                key={scenario.id}
+                to={`/child-select/${scenario.id}`}
+                className="scenario-item card"
+              >
+                <div className="scenario-item-icon">
+                  <ScenarioIcon type={scenario.iconType} size={80} />
                 </div>
-                <div className="scenario-item-steps">
-                  <h4>주요 단계:</h4>
-                  <ul>
-                    {scenario.steps.slice(0, 3).map((step, index) => (
-                      <li key={index}>{step}</li>
-                    ))}
-                    {scenario.steps.length > 3 && (
-                      <li>... 외 {scenario.steps.length - 3}단계</li>
-                    )}
-                  </ul>
+                <div className="scenario-item-content">
+                  <h2>{scenario.title || scenario.name}</h2>
+                  <p>{scenario.description}</p>
+                  <div className="scenario-item-meta">
+                    <span className="badge badge-info">{scenario.difficulty}</span>
+                    <span className="scenario-item-time">
+                      <FaClock size={14} /> {scenario.estimatedTime}
+                    </span>
+                  </div>
+                  <div className="scenario-item-steps">
+                    <h4>주요 단계:</h4>
+                    <ul>
+                      {steps.slice(0, 3).map((step, index) => (
+                        <li key={index}>{step}</li>
+                      ))}
+                      {steps.length > 3 && (
+                        <li>... 외 {steps.length - 3}단계</li>
+                      )}
+                    </ul>
+                  </div>
                 </div>
-              </div>
-              <div className="scenario-item-arrow">
-                <FaArrowRight size={32} />
-              </div>
-            </Link>
-          ))}
+                <div className="scenario-item-arrow">
+                  <FaArrowRight size={32} />
+                </div>
+              </Link>
+            )
+          })}
         </div>
       </div>
     </div>

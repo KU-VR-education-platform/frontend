@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { signup } from '../api/user'
 import './RegisterPage.css'
 
 function RegisterPage() {
@@ -9,7 +10,7 @@ function RegisterPage() {
     email: '',
     password: '',
     passwordConfirm: '',
-    role: 'parent' // 'parent' or 'teacher'
+    role: 'parent' // 백엔드 DTO에 role이 없으므로 일단 API 전송시에는 제외될 수 있음
   })
   const [error, setError] = useState('')
 
@@ -21,9 +22,9 @@ function RegisterPage() {
     setError('')
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (formData.password !== formData.passwordConfirm) {
       setError('비밀번호가 일치하지 않습니다.')
       return
@@ -34,13 +35,24 @@ function RegisterPage() {
       return
     }
 
-    // 더미 회원가입 로직
-    // 실제로는 API 호출
-    console.log('회원가입:', formData)
-    
-    // 회원가입 성공 후 로그인 페이지로 이동
-    alert('회원가입이 완료되었습니다!')
-    navigate('/login')
+    try {
+      // API 호출
+      // 백엔드 UserCreateRequest: userId, password, confirmPassword, nickname
+      await signup({
+        userId: formData.email,
+        password: formData.password,
+        confirmPassword: formData.passwordConfirm,
+        nickname: formData.name
+      })
+
+      // 회원가입 성공 후 로그인 페이지로 이동
+      alert('회원가입이 완료되었습니다!')
+      navigate('/login')
+    } catch (err) {
+      console.error(err)
+      // 에러 메시지 처리 (백엔드 에러 응답 구조에 따라 다를 수 있음)
+      setError(err.response?.data?.message || '회원가입에 실패했습니다.')
+    }
   }
 
   return (
@@ -63,12 +75,12 @@ function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="register-form">
             <div className="form-group">
-              <label className="form-label">이름</label>
+              <label className="form-label">이름(닉네임)</label>
               <input
                 type="text"
                 name="name"
                 className="form-input"
-                placeholder="이름을 입력하세요"
+                placeholder="이름(닉네임)을 입력하세요"
                 value={formData.name}
                 onChange={handleChange}
                 required
@@ -76,18 +88,19 @@ function RegisterPage() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">이메일</label>
+              <label className="form-label">아이디(이메일)</label>
               <input
-                type="email"
+                type="email" // text로 변경 가능하지만 email 유효성 검사 위해 둠
                 name="email"
                 className="form-input"
-                placeholder="이메일을 입력하세요"
+                placeholder="아이디(이메일)를 입력하세요"
                 value={formData.email}
                 onChange={handleChange}
                 required
               />
             </div>
 
+            {/* 역할 선택 - 백엔드 미지원으로 보이지만 UI 유지 */}
             <div className="form-group">
               <label className="form-label">역할</label>
               <select
@@ -108,11 +121,11 @@ function RegisterPage() {
                 type="password"
                 name="password"
                 className="form-input"
-                placeholder="비밀번호를 입력하세요 (6자 이상)"
+                placeholder="비밀번호를 입력하세요 (7자 이상)"
                 value={formData.password}
                 onChange={handleChange}
                 required
-                minLength={6}
+                minLength={7}
               />
             </div>
 

@@ -76,7 +76,9 @@ function ScenarioSelectPage({ user }) {
                     <h4>주요 단계:</h4>
                     <ul>
                       {steps.slice(0, 3).map((step, index) => (
-                        <li key={index}>{step}</li>
+                        <li key={index}>
+                          {typeof step === 'object' ? step.description : step}
+                        </li>
                       ))}
                       {steps.length > 3 && (
                         <li>... 외 {steps.length - 3}단계</li>

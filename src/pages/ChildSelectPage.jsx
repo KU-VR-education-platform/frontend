@@ -111,14 +111,15 @@ function ChildSelectPage({ user }) {
                   </div>
                   <h3>{child.name}</h3>
                   <p>생일: {child.birthDate}</p>
-                  {/* 
-                  <div className="child-select-stats">
-                    <span>완료: {child.total_scenarios}개</span>
-                    <span>평균: {child.average_score}점</span>
-                  </div>
-                 */}
-                  <div className="child-select-stats">
-                    <span>메모: {child.memo || '-'}</span>
+                  <div className="child-card-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">평균 점수</span>
+                      <span className="stat-value">{child.averageScore ? `${child.averageScore}점` : '-'}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">완료</span>
+                      <span className="stat-value">{child.totalScenarios}회</span>
+                    </div>
                   </div>
                 </div>
               )))}

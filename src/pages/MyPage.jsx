@@ -188,15 +188,18 @@ function MyPage({ user }) {
                         <p>생일: {child.birthDate}</p>
                       </div>
                     </div>
-                    {/* 통계 데이터는 현재 API에 없으므로 숨기거나 고정값 */}
                     <div className="child-stats">
+                      <div className="stat">
+                        <span className="stat-label">평균 점수</span>
+                        <span className="stat-value">{child.averageScore ? `${child.averageScore}점` : '-'}</span>
+                      </div>
+                      <div className="stat">
+                        <span className="stat-label">완료한 시나리오</span>
+                        <span className="stat-value">{child.totalScenarios}개</span>
+                      </div>
                       <div className="stat">
                         <span className="stat-label">초대 코드</span>
                         <span className="stat-value">{child.inviteCode || '-'}</span>
-                      </div>
-                      <div className="stat">
-                        <span className="stat-label">메모</span>
-                        <span className="stat-value">{child.memo || '-'}</span>
                       </div>
                     </div>
                     <div className="child-actions">

@@ -208,6 +208,7 @@ function MyPage({ user }) {
                       </button>
                       <Link
                         to="/scenario-select"
+                        state={{ selectedChildId: selectedChild }}
                         className="btn btn-secondary"
                       >
                         시나리오 시작

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { getScenarios } from '../api/scenario'
 import ScenarioIcon from '../components/ScenarioIcon'
 import { FaClock, FaArrowRight } from 'react-icons/fa'
 import './ScenarioSelectPage.css'
 
 function ScenarioSelectPage({ user }) {
-  const [scenarios, setScenarios] = useState([])
+  const location = useLocation()
+  const selectedChildId = location.state?.selectedChildId
 
   useEffect(() => {
     async function fetchData() {
@@ -58,6 +59,7 @@ function ScenarioSelectPage({ user }) {
               <Link
                 key={scenario.id}
                 to={`/child-select/${scenario.id}`}
+                state={{ selectedChildId }}
                 className="scenario-item card"
               >
                 <div className="scenario-item-icon">

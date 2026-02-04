@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
 import { getScenarios, getVrCode } from '../api/scenario'
 import { getMyChildren } from '../api/child'
 import { FaVrCardboard } from 'react-icons/fa'
@@ -8,11 +8,13 @@ import './ChildSelectPage.css'
 function ChildSelectPage({ user }) {
   const { scenarioId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const initialSelectedChildId = location.state?.selectedChildId
 
   const [children, setChildren] = useState([])
   const [scenariosList, setScenariosList] = useState([])
 
-  const [selectedChild, setSelectedChild] = useState(null)
+  const [selectedChild, setSelectedChild] = useState(initialSelectedChildId || null)
   const [vrCode, setVrCode] = useState(null)
 
   useEffect(() => {
@@ -32,6 +34,12 @@ function ChildSelectPage({ user }) {
   }, [])
 
   const scenario = scenariosList.find(s => s.id === parseInt(scenarioId))
+
+  useEffect(() => {
+    if (initialSelectedChildId && !vrCode) {
+      handleChildSelect(initialSelectedChildId)
+    }
+  }, [initialSelectedChildId])
 
   const handleChildSelect = async (childId) => {
     setSelectedChild(childId)

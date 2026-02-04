@@ -34,29 +34,45 @@ function App() {
     <div className="App">
       <Routes>
         <Route path="/" element={<MainPage user={user} onLogout={handleLogout} />} />
-        <Route 
-          path="/login" 
-          element={user ? <Navigate to="/" /> : <LoginPage onLogin={handleLogin} />} 
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/" /> : <LoginPage onLogin={handleLogin} />}
         />
-        <Route 
-          path="/register" 
-          element={user ? <Navigate to="/" /> : <RegisterPage />} 
+        <Route
+          path="/register"
+          element={user ? <Navigate to="/" /> : <RegisterPage />}
         />
-        <Route 
-          path="/mypage" 
-          element={user ? <MyPage user={user} /> : <Navigate to="/login" />} 
+        <Route
+          path="/mypage"
+          element={user ? <MyPage user={user} /> : <Navigate to="/login" />}
         />
-        <Route 
-          path="/scenario-select" 
-          element={user ? <ScenarioSelectPage user={user} /> : <Navigate to="/login" />} 
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/" /> : <LoginPage onLogin={handleLogin} />}
         />
-        <Route 
-          path="/child-select/:scenarioId" 
-          element={user ? <ChildSelectPage user={user} /> : <Navigate to="/login" />} 
+        <Route
+          path="/register"
+          element={user ? <Navigate to="/" /> : <RegisterPage />}
         />
-        <Route 
-          path="/scenario-detail/:childId/:scenarioId" 
-          element={user ? <ScenarioDetailPage user={user} /> : <Navigate to="/login" />} 
+        <Route
+          path="/mypage"
+          element={user ? <MyPage user={user} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/scenario-select"
+          element={user ? <ScenarioSelectPage user={user} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/child-select/:scenarioId"
+          element={user ? <ChildSelectPage user={user} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/scenario-detail/:reportId"
+          element={user ? <ScenarioDetailPage user={user} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/scenario-detail/:childId/:scenarioId"
+          element={user ? <ScenarioDetailPage user={user} /> : <Navigate to="/login" />}
         />
       </Routes>
     </div>

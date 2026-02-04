@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getMyChildren, createChild } from '../api/child'
-import { FaChartBar, FaFileAlt } from 'react-icons/fa'
+import { getReportsByChildId } from '../api/report'
+import { FaChartBar, FaFileAlt, FaClock, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa'
 import './MyPage.css'
 
 function MyPage({ user }) {
@@ -16,18 +17,44 @@ function MyPage({ user }) {
   const [newChildMemo, setNewChildMemo] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
 
+  // Reports State
+  const [reports, setReports] = useState([])
+  const [loadingReports, setLoadingReports] = useState(false)
+
   // Fetch children on mount
   useEffect(() => {
     fetchChildren()
   }, [])
 
+  // Fetch reports when child is selected
+  useEffect(() => {
+    if (selectedChild) {
+      fetchReports(selectedChild)
+    } else if (children.length > 0) {
+      // Default to first child if none selected
+      setSelectedChild(children[0].id)
+    }
+  }, [selectedChild, children])
+
   const fetchChildren = async () => {
     try {
       const response = await getMyChildren()
-      // response가 Page 객체일 경우 content 배열 사용
       setChildren(response.content || [])
     } catch (error) {
       console.error('Failed to fetch children', error)
+    }
+  }
+
+  const fetchReports = async (childId) => {
+    setLoadingReports(true)
+    try {
+      const data = await getReportsByChildId(childId)
+      setReports(data)
+    } catch (error) {
+      console.error('Failed to fetch reports', error)
+      setReports([])
+    } finally {
+      setLoadingReports(false)
     }
   }
 
@@ -45,7 +72,7 @@ function MyPage({ user }) {
         setNewChildBirthDate('')
         setNewChildMemo('')
         setShowAddForm(false)
-        fetchChildren() // 목록 갱신
+        fetchChildren()
       } catch (error) {
         console.error('Failed to create child', error)
         alert('아이 추가에 실패했습니다.')
@@ -57,9 +84,6 @@ function MyPage({ user }) {
     setSelectedChild(childId)
     setActiveTab('results')
   }
-
-  // 학습 기록은 현재 백엔드 미구현이므로 빈 배열 처리
-  const allResults = []
 
   return (
     <div className="mypage">
@@ -222,13 +246,83 @@ function MyPage({ user }) {
               </div>
             ) : (
               <div className="results-list">
-                {/* 백엔드 API 미구현으로 Empty State 표시 */}
-                <div className="empty-state">
-                  <div className="empty-state-icon">
-                    <FaFileAlt size={64} />
+                {loadingReports ? (
+                  <div className="loading-state">기록을 불러오는 중...</div>
+                ) : reports.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state-icon">
+                      <FaFileAlt size={64} />
+                    </div>
+                    <p>아직 완료한 시나리오가 없습니다.</p>
+                    <Link to="/scenario-select" className="btn btn-primary top-margin">
+                      시나리오 체험하러 가기
+                    </Link>
                   </div>
-                  <p>아직 완료한 시나리오가 없거나 기록을 불러올 수 없습니다.</p>
-                </div>
+                ) : (
+                  reports.map((report) => {
+                    let analysis = {}
+                    try {
+                      analysis = JSON.parse(report.aiAnalysis) || {}
+                    } catch (e) {
+                      analysis = { feedback: report.aiAnalysis } // fallback for simple string
+                    }
+
+                    return (
+                      <div key={report.id} className="report-card card">
+                        <div className="report-header">
+                          <div className="report-title">
+                            <h3>{report.scenarioTitle}</h3>
+                            <span className="report-date">
+                              {new Date(report.completedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="report-score">
+                            <span className="score-value">{report.score}</span>
+                            <span className="score-label">점</span>
+                          </div>
+                        </div>
+
+                        <div className="report-summary">
+                          <div className="summary-item">
+                            <FaClock className="icon" />
+                            <span>소요 시간: {Math.floor(report.duration / 60)}분 {report.duration % 60}초</span>
+                          </div>
+                        </div>
+
+                        <div className="report-feedback">
+                          <h4>AI 분석 결과</h4>
+
+                          {/* 강점 */}
+                          {analysis.strengths && analysis.strengths.length > 0 && (
+                            <div className="feedback-section good">
+                              <h5><FaCheckCircle /> 잘한 점</h5>
+                              <ul>
+                                {analysis.strengths.map((item, idx) => <li key={idx}>{item}</li>)}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* 개선점 */}
+                          {analysis.improvements && analysis.improvements.length > 0 && (
+                            <div className="feedback-section bad">
+                              <h5><FaExclamationTriangle /> 아쉬운 점</h5>
+                              <ul>
+                                {analysis.improvements.map((item, idx) => <li key={idx}>{item}</li>)}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* 단순 피드백 (fallback) */}
+                          {analysis.feedback && (
+                            <div className="feedback-section info">
+                              <p>{analysis.feedback}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
               </div>
             )}
           </div>

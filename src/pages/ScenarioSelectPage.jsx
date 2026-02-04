@@ -8,6 +8,7 @@ import './ScenarioSelectPage.css'
 function ScenarioSelectPage({ user }) {
   const location = useLocation()
   const selectedChildId = location.state?.selectedChildId
+  const [scenarios, setScenarios] = useState([])
 
   useEffect(() => {
     async function fetchData() {

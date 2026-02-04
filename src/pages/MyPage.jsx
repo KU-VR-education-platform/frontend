@@ -320,6 +320,63 @@ function MyPage({ user }) {
                             </div>
                           )}
                         </div>
+
+                        {/* 상세 단계 및 실수 로그 (더미 데이터 스타일 복원) */}
+                        <div className="report-details">
+                          <button className="btn-toggle-details" onClick={(e) => {
+                            e.currentTarget.classList.toggle('active');
+                            e.currentTarget.nextElementSibling.classList.toggle('show');
+                          }}>
+                            상세 기록 보기
+                          </button>
+                          <div className="details-content">
+                            {/* 단계별 수행 기록 */}
+                            <div className="steps-log">
+                              <h5>단계별 수행</h5>
+                              <ul>
+                                {(() => {
+                                  try {
+                                    const steps = JSON.parse(report.stepsCompleted) || [];
+                                    return steps.map((step, idx) => (
+                                      <li key={idx} className={`step-item ${step.completed ? 'success' : 'fail'}`}>
+                                        <div className="step-info">
+                                          <span className="step-name">{step.step}</span>
+                                          <span className="step-time">{step.time}초</span>
+                                        </div>
+                                        <div className="step-status">
+                                          {step.completed ? <FaCheckCircle className="text-green" /> : <FaExclamationTriangle className="text-red" />}
+                                        </div>
+                                      </li>
+                                    ));
+                                  } catch (e) { return <li>상세 단계 정보 없음</li> }
+                                })()}
+                              </ul>
+                            </div>
+
+                            {/* 실수 로그 */}
+                            {(() => {
+                              try {
+                                const mistakes = JSON.parse(report.mistakes) || [];
+                                if (mistakes.length > 0) {
+                                  return (
+                                    <div className="mistakes-log">
+                                      <h5>실수 기록</h5>
+                                      <ul>
+                                        {mistakes.map((m, idx) => (
+                                          <li key={idx}>
+                                            <span className="mistake-step">[{m.step}]</span>
+                                            <span className="mistake-msg">{m.message}</span>
+                                            <span className="mistake-time">({m.time}초)</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )
+                                }
+                              } catch (e) { }
+                            })()}
+                          </div>
+                        </div>
                       </div>
                     )
                   })

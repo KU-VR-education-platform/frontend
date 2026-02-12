@@ -58,9 +58,44 @@ function LoginPage({ onLogin }) {
 
   const handleOAuthLogin = (provider) => {
     // 백엔드 OAuth2 로그인 URL로 리다이렉트
-    // http://localhost:8080/oauth2/authorization/{provider}
-    const BACKEND_URL = 'http://localhost:8080'
-    window.location.href = `${BACKEND_URL}/oauth2/authorization/${provider}`
+    // http://3.38.239.153/api/v1/oauth2/authorization/{provider} (Nginx proxy)
+    // Spring Security OAuth2 기본 경로는 /oauth2/authorization/{provider}
+    // Nginx가 /api/ -> backend:8080/ 으로 포워딩한다면:
+    // http://3.38.239.153/api/oauth2/authorization/{provider} -> backend:8080/oauth2/authorization/{provider}
+    // 근데 context-path가 없으므로 backend:8080/oauth2/... 가 정답.
+
+    // 만약 Nginx가 /api/를 backend:8080/api/ 로 보낸다면 (rewrite 없으면)
+    // 백엔드는 /api/v1/... 을 받음.
+    // OAuth 엔드포인트는 /oauth2/... 임.
+    // 즉, /api/ 경로로는 OAuth 엔드포인트에 접근 불가할 수 있음 (Nginx 설정에 따라).
+
+    // Nginx 설정을 보면:
+    // location /api/ { proxy_pass http://backend:8080; }
+    // 이는 http://host/api/foo -> http://backend:8080/api/foo 로 감.
+    // 하지만 OAuth2 디폴트 엔드포인트는 /oauth2/... 임. /api/ 밑에 있지 않음.
+    // 따라서 Nginx에서 /oauth2/ 경로도 프록시해줘야 함.
+
+    // 일단 프론트엔드는 IP/oauth2/... 로 요청을 보낼 것임.
+    // Nginx 설정을 추가해야 함.
+
+    const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://3.38.239.153'
+    // VITE_API_URL이 http://3.38.239.153/api/v1 이라면 origin은 http://3.38.239.153
+
+    let targetOrigin = 'http://3.38.239.153';
+    if (import.meta.env.VITE_API_URL) {
+      try {
+        const url = new URL(import.meta.env.VITE_API_URL);
+        targetOrigin = url.origin;
+      } catch (e) {
+        console.error('Invalid VITE_API_URL', e);
+      }
+    }
+
+    // 만약 Nginx가 80포트에서 /oauth2를 처리 안하면 8080으로 직접 보내야 하나?
+    // "ip 3.38.239.153이야" -> 보통 80포트.
+    // Nginx 설정을 고쳐서 /oauth2/ 도 프록시하게 해야 함.
+
+    window.location.href = `${targetOrigin}/oauth2/authorization/${provider}`
   }
 
   return (

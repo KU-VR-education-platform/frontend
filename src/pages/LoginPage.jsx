@@ -57,9 +57,10 @@ function LoginPage({ onLogin }) {
   }
 
   const handleOAuthLogin = (provider) => {
-    // OAuth 로그인 처리 (아직 백엔드 연동 전이라면 더미 유지 또는 수정 필요)
-    console.log(`${provider} OAuth 로그인 시도`)
-    alert('SNS 로그인은 준비 중입니다.')
+    // 백엔드 OAuth2 로그인 URL로 리다이렉트
+    // http://localhost:8080/oauth2/authorization/{provider}
+    const BACKEND_URL = 'http://localhost:8080'
+    window.location.href = `${BACKEND_URL}/oauth2/authorization/${provider}`
   }
 
   return (

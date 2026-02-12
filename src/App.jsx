@@ -7,6 +7,7 @@ import MyPage from './pages/MyPage'
 import ScenarioSelectPage from './pages/ScenarioSelectPage'
 import ChildSelectPage from './pages/ChildSelectPage'
 import ScenarioDetailPage from './pages/ScenarioDetailPage'
+import OAuthCallback from './pages/OAuthCallback'
 import './App.css'
 
 function App() {
@@ -74,6 +75,7 @@ function App() {
           path="/scenario-detail/:childId/:scenarioId"
           element={user ? <ScenarioDetailPage user={user} /> : <Navigate to="/login" />}
         />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
       </Routes>
     </div>
   )

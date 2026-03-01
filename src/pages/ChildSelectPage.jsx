@@ -14,9 +14,10 @@ function ChildSelectPage({ user }) {
   const [children, setChildren] = useState([])
   const [scenariosList, setScenariosList] = useState([])
 
-  const [selectedChild, setSelectedChild] = useState(initialSelectedChildId || null)
+  const [selectedChild, setSelectedChild] = useState(null)
   const [vrCode, setVrCode] = useState(null)
   const [isInitializing, setIsInitializing] = useState(!!initialSelectedChildId)
+  const [hasAutoLoaded, setHasAutoLoaded] = useState(false)
 
   useEffect(() => {
     async function fetchData() {
@@ -37,11 +38,12 @@ function ChildSelectPage({ user }) {
   const scenario = scenariosList.find(s => s.id === parseInt(scenarioId))
 
   useEffect(() => {
-    // initialSelectedChildId가 있고 아직 vrCode가 없을 때만 자동 실행
-    if (initialSelectedChildId && !vrCode && !selectedChild) {
+    // initialSelectedChildId가 있고 아직 자동 로딩을 수행하지 않았을 때만 실행
+    if (initialSelectedChildId && !vrCode && !selectedChild && !hasAutoLoaded) {
+      setHasAutoLoaded(true)
       handleChildSelect(initialSelectedChildId)
     }
-  }, [initialSelectedChildId, vrCode, selectedChild])
+  }, [initialSelectedChildId, vrCode, selectedChild, hasAutoLoaded, scenarioId])
 
   const handleChildSelect = async (childId) => {
     setSelectedChild(childId)
@@ -134,7 +136,7 @@ function ChildSelectPage({ user }) {
       <div className="child-select-container">
         <div className="page-header">
           <div className="back-button">
-            <Link to="/scenario-select" className="btn btn-secondary">
+            <Link to="/scenario-select" className="btn btn-secondary" state={{ selectedChildId: null }}>
               ← 시나리오 선택으로
             </Link>
           </div>

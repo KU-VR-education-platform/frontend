@@ -82,9 +82,10 @@
 }
 
 .child-select-card.disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
   background-color: #f3f4f6;
+  filter: grayscale(1);
   transform: none !important;
   box-shadow: none !important;
 }

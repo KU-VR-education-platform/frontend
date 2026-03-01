@@ -37,13 +37,15 @@ function ChildSelectPage({ user }) {
   const scenario = scenariosList.find(s => s.id === parseInt(scenarioId))
 
   useEffect(() => {
-    if (initialSelectedChildId && !vrCode) {
+    // initialSelectedChildId가 있고 아직 vrCode가 없을 때만 자동 실행
+    if (initialSelectedChildId && !vrCode && !selectedChild) {
       handleChildSelect(initialSelectedChildId)
     }
-  }, [initialSelectedChildId])
+  }, [initialSelectedChildId, vrCode, selectedChild])
 
   const handleChildSelect = async (childId) => {
     setSelectedChild(childId)
+    setVrCode(null) // 기존 코드 초기화
     try {
       const code = await getVrCode(childId, parseInt(scenarioId))
       setVrCode(code)
@@ -148,8 +150,11 @@ function ChildSelectPage({ user }) {
               ) : (children.map((child) => (
                 <div
                   key={child.childId}
-                  className={`child-select-card card ${child.isInProgress ? 'disabled' : ''}`}
-                  onClick={() => !child.isInProgress && handleChildSelect(child.childId)}
+                  className={`child-select-card card ${child.isInProgress && child.activeScenarioId !== parseInt(scenarioId) ? 'disabled' : ''}`}
+                  onClick={() => {
+                    if (child.isInProgress && child.activeScenarioId !== parseInt(scenarioId)) return
+                    handleChildSelect(child.childId)
+                  }}
                 >
                   <div className="child-select-avatar">
                     {child.name.charAt(0)}

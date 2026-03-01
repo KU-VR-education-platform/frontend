@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getMyChildren, createChild } from '../api/child'
 import { getReportsByChildId } from '../api/report'
+import { getVrCode, cancelVrCode } from '../api/scenario'
 import { FaChartBar, FaFileAlt, FaClock, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa'
 import './MyPage.css'
 
@@ -83,6 +84,22 @@ function MyPage({ user }) {
   const handleViewResults = (childId) => {
     setSelectedChild(childId)
     setActiveTab('results')
+  }
+
+  const handleCancelSession = async (childId, scenarioId) => {
+    if (!window.confirm('교육 준비를 취소하시겠습니까?')) return
+
+    try {
+      // 1. VR 코드 조회
+      const code = await getVrCode(childId, scenarioId)
+      // 2. 취소 API 호출
+      await cancelVrCode(code)
+      alert('취소되었습니다.')
+      fetchChildren() // 목록 새로고침
+    } catch (error) {
+      console.error(error)
+      alert(error.response?.data?.message || '취소에 실패했습니다.')
+    }
   }
 
   return (
@@ -212,9 +229,26 @@ function MyPage({ user }) {
                         기록 보기
                       </button>
                       {child.isInProgress ? (
-                        <button className="btn btn-secondary disabled" disabled>
-                          교육 진행 중
-                        </button>
+                        <>
+                          <button className="btn btn-secondary disabled" disabled>
+                            {child.vrCodeStatus === 'ISSUED' ? '인증 대기 중' : '교육 진행 중'}
+                          </button>
+                          <Link
+                            to={`/child-select/${child.activeScenarioId}`}
+                            state={{ selectedChildId: child.childId }}
+                            className="btn btn-primary"
+                          >
+                            VR 코드 보기
+                          </Link>
+                          {child.vrCodeStatus === 'ISSUED' && (
+                            <button
+                              className="btn btn-danger"
+                              onClick={() => handleCancelSession(child.childId, child.activeScenarioId)}
+                            >
+                              취소
+                            </button>
+                          )}
+                        </>
                       ) : (
                         <Link
                           to="/scenario-select"

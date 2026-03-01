@@ -13,3 +13,7 @@ export const getVrCode = async (childId, scenarioId) => {
 export const verifyVrCode = async (code) => {
     await axios.post('/vr-codes/verify', { code })
 }
+
+export const cancelVrCode = async (code) => {
+    await axios.delete(`/vr-codes/${code}`)
+}

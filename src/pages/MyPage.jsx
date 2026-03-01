@@ -178,14 +178,16 @@ function MyPage({ user }) {
                 <div className="empty-message">등록된 아이가 없습니다.</div>
               ) : (
                 children.map((child) => (
-                  <div key={child.childId} className="child-card card">
+                  <div key={child.childId} className={`child-card card ${child.isInProgress ? 'in-progress' : ''}`}>
                     <div className="child-header">
                       <div className="child-avatar">
                         {child.name.charAt(0)}
+                        {child.isInProgress && <div className="progress-badge">진행중</div>}
                       </div>
                       <div className="child-info">
                         <h3>{child.name}</h3>
                         <p>생일: {child.birthDate}</p>
+                        {child.isInProgress && <p className="status-text">교육이 진행 중입니다</p>}
                       </div>
                     </div>
                     <div className="child-stats">
@@ -209,13 +211,19 @@ function MyPage({ user }) {
                       >
                         기록 보기
                       </button>
-                      <Link
-                        to="/scenario-select"
-                        state={{ selectedChildId: selectedChild }}
-                        className="btn btn-secondary"
-                      >
-                        시나리오 시작
-                      </Link>
+                      {child.isInProgress ? (
+                        <button className="btn btn-secondary disabled" disabled>
+                          교육 진행 중
+                        </button>
+                      ) : (
+                        <Link
+                          to="/scenario-select"
+                          state={{ selectedChildId: child.childId }}
+                          className="btn btn-secondary"
+                        >
+                          시나리오 시작
+                        </Link>
+                      )}
                     </div>
                   </div>
                 ))
@@ -264,15 +272,8 @@ function MyPage({ user }) {
                   </div>
                 ) : (
                   reports.map((report) => {
-                    let analysis = {}
-                    try {
-                      analysis = JSON.parse(report.aiAnalysis) || {}
-                    } catch (e) {
-                      analysis = { feedback: report.aiAnalysis } // fallback for simple string
-                    }
-
                     return (
-                      <div key={report.id} className="report-card card">
+                      <div key={report.id} className="report-card card simple">
                         <div className="report-header">
                           <div className="report-title">
                             <h3>{report.scenarioTitle}</h3>
@@ -293,40 +294,9 @@ function MyPage({ user }) {
                           </div>
                         </div>
 
-                        <div className="report-feedback">
-                          <h4>AI 분석 결과</h4>
-
-                          {/* 강점 */}
-                          {analysis.strengths && analysis.strengths.length > 0 && (
-                            <div className="feedback-section good">
-                              <h5><FaCheckCircle /> 잘한 점</h5>
-                              <ul>
-                                {analysis.strengths.map((item, idx) => <li key={idx}>{item}</li>)}
-                              </ul>
-                            </div>
-                          )}
-
-                          {/* 개선점 */}
-                          {analysis.improvements && analysis.improvements.length > 0 && (
-                            <div className="feedback-section bad">
-                              <h5><FaExclamationTriangle /> 아쉬운 점</h5>
-                              <ul>
-                                {analysis.improvements.map((item, idx) => <li key={idx}>{item}</li>)}
-                              </ul>
-                            </div>
-                          )}
-
-                          {/* 단순 피드백 (fallback) */}
-                          {analysis.feedback && (
-                            <div className="feedback-section info">
-                              <p>{analysis.feedback}</p>
-                            </div>
-                          )}
-                        </div>
-
                         <div className="report-actions">
                           <Link to={`/scenario-detail/${report.id}`} className="btn-detail-view">
-                            상세 기록 보기 &gt;
+                            상세 분석 리포트 보기 &gt;
                           </Link>
                         </div>
                       </div>

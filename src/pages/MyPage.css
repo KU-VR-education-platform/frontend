@@ -134,12 +134,14 @@
 .stat-label {
   font-size: 12px;
   color: #666;
+  white-space: nowrap;
 }
 
 .stat-value {
   font-size: 20px;
   font-weight: bold;
   color: #333;
+  white-space: nowrap;
 }
 
 .child-actions {
@@ -150,6 +152,9 @@
 
 .child-actions .btn {
   flex: 1;
+  white-space: nowrap;
+  min-width: fit-content;
+  padding: 10px 16px;
 }
 
 .child-card.in-progress {

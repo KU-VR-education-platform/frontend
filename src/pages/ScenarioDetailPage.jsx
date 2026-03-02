@@ -117,6 +117,16 @@ function ScenarioDetailPage({ user }) {
                   </ul>
                 </div>
               )}
+
+              {/* VR 원본 데이터 섹션 (AI 분석 박스 내부로 이동) */}
+              {report.resultData && (
+                <div className="raw-data-section">
+                  <h3 className="analysis-title">VR 원본 데이터 (JSON)</h3>
+                  <div className="raw-json-container">
+                    <pre>{JSON.stringify(JSON.parse(report.resultData), null, 2)}</pre>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -67,6 +67,32 @@ function ChildSelectPage({ user }) {
     }
   }
 
+  // VR 코드 인증 완료 시 마이페이지로 자동 이동하는 폴링 로직
+  useEffect(() => {
+    let intervalId;
+
+    if (vrCode && selectedChild) {
+      intervalId = setInterval(async () => {
+        try {
+          const childrenData = await getMyChildren();
+          const childrenList = childrenData.content || [];
+          const currentChild = childrenList.find(c => c.childId === selectedChild);
+
+          if (currentChild && currentChild.vrCodeStatus === 'AUTHENTICATED') {
+            console.log('인증 확인됨. 마이페이지로 이동합니다.');
+            navigate('/mypage');
+          }
+        } catch (e) {
+          console.error('상태 폴링 중 오류:', e);
+        }
+      }, 3000); // 3초 주기
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [vrCode, selectedChild, navigate]);
+
   const handleCancelVrCode = async () => {
     if (!vrCode) return
 

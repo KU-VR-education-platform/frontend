@@ -313,9 +313,37 @@
   font-size: 18px;
 }
 
+.raw-data-section {
+  margin-top: 32px;
+  border-top: 1px solid #eee;
+  padding-top: 24px;
+}
+
+.raw-data-section .analysis-title {
+  margin-bottom: 16px;
+  color: #666;
+}
+
+.raw-json-container {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 20px;
+  border-radius: 8px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.raw-json-container pre {
+  margin: 0;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
 @media (max-width: 1024px) {
   .detail-content {
     grid-template-columns: 1fr;
   }
 }
-

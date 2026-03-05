@@ -12,6 +12,7 @@ import './App.css'
 
 function App() {
   const [user, setUser] = useState(null)
+  const [isAuthInitialized, setIsAuthInitialized] = useState(false)
 
   useEffect(() => {
     // 로컬 스토리지에서 사용자 정보 불러오기
@@ -19,7 +20,12 @@ function App() {
     if (savedUser) {
       setUser(JSON.parse(savedUser))
     }
+    setIsAuthInitialized(true)
   }, [])
+
+  if (!isAuthInitialized) {
+    return <div className="loading-screen">사용자 정보를 확인 중입니다...</div>
+  }
 
   const handleLogin = (userData) => {
     setUser(userData)
@@ -35,18 +41,6 @@ function App() {
     <div className="App">
       <Routes>
         <Route path="/" element={<MainPage user={user} onLogout={handleLogout} />} />
-        <Route
-          path="/login"
-          element={user ? <Navigate to="/" /> : <LoginPage onLogin={handleLogin} />}
-        />
-        <Route
-          path="/register"
-          element={user ? <Navigate to="/" /> : <RegisterPage />}
-        />
-        <Route
-          path="/mypage"
-          element={user ? <MyPage user={user} /> : <Navigate to="/login" />}
-        />
         <Route
           path="/login"
           element={user ? <Navigate to="/" /> : <LoginPage onLogin={handleLogin} />}

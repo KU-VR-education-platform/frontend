@@ -4,6 +4,9 @@ on:
   push:
     branches: [ main ]
 
+env:
+  TZ: Asia/Seoul
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -33,4 +36,6 @@ jobs:
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/vr-education-frontend:latest
           docker stop frontend || true
           docker rm frontend || true
-          docker run -d --name frontend --network vr-network -p 80:80 ${{ secrets.DOCKERHUB_USERNAME }}/vr-education-frontend:latest
+          docker run -d --name frontend --network vr-network -p 80:80 \
+            -e TZ=Asia/Seoul \
+            ${{ secrets.DOCKERHUB_USERNAME }}/vr-education-frontend:latest

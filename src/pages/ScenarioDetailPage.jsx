@@ -68,7 +68,7 @@ function ScenarioDetailPage({ user }) {
             <div className="score-section card">
               <h2>종합 점수</h2>
               <div className="score-display">
-                <span className="score">{report.score}</span>
+                <span className="score">{report.totalScore}</span>
                 <span className="score-label">점</span>
               </div>
               <div className="score-info">

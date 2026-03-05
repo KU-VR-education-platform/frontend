@@ -316,7 +316,7 @@ function MyPage({ user }) {
                             </span>
                           </div>
                           <div className="report-score">
-                            <span className="score-value">{report.score}</span>
+                            <span className="score-value">{report.totalScore}</span>
                             <span className="score-label">점</span>
                           </div>
                         </div>

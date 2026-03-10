@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getMyChildren, createChild, unlinkChild } from '../api/child'
+import { getMyChildren, createChild, updateChild, unlinkChild } from '../api/child'
 import { getReportsByChildId } from '../api/report'
 import { getVrCode, cancelVrCode } from '../api/scenario'
 import { FaChartBar, FaFileAlt, FaClock, FaCheckCircle, FaExclamationTriangle, FaTrash, FaEdit } from 'react-icons/fa'
@@ -21,6 +21,9 @@ function MyPage({ user }) {
   const [newChildGroupName, setNewChildGroupName] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
   const [isEditingList, setIsEditingList] = useState(false) // Edit mode state
+
+  // Edit Child State
+  const [childToEdit, setChildToEdit] = useState(null)
 
   // Filter State
   const [selectedTags, setSelectedTags] = useState([])
@@ -70,28 +73,57 @@ function MyPage({ user }) {
     }
   }
 
+  const resetFormValues = () => {
+    setNewChildName('')
+    setNewChildBirthDate('')
+    setNewChildMemo('')
+    setNewChildGroupName('')
+    setChildToEdit(null)
+    setShowAddForm(false)
+  }
+
   const handleAddChild = async (e) => {
     e.preventDefault()
     if (newChildName && newChildBirthDate) {
       try {
-        await createChild({
-          name: newChildName,
-          birthDate: newChildBirthDate,
-          memo: newChildMemo,
-          groupName: newChildGroupName // 추가된 필드
-        })
-        await showAlert(`${newChildName} 아이가 추가되었습니다!`, '추가 완료')
-        setNewChildName('')
-        setNewChildBirthDate('')
-        setNewChildMemo('')
-        setNewChildGroupName('')
-        setShowAddForm(false)
+        if (childToEdit) {
+          // Update mode
+          await updateChild({
+            childId: childToEdit.childId,
+            name: newChildName,
+            birthDate: newChildBirthDate,
+            memo: newChildMemo,
+            groupName: newChildGroupName
+          })
+          await showAlert(`${newChildName} 아이 정보가 수정되었습니다!`, '수정 완료')
+        } else {
+          // Create mode
+          await createChild({
+            name: newChildName,
+            birthDate: newChildBirthDate,
+            memo: newChildMemo,
+            groupName: newChildGroupName
+          })
+          await showAlert(`${newChildName} 아이가 추가되었습니다!`, '추가 완료')
+        }
+        resetFormValues()
         fetchChildren()
       } catch (error) {
-        console.error('Failed to create child', error)
-        await showAlert('아이 추가에 실패했습니다.', '오류')
+        console.error(childToEdit ? 'Failed to update child' : 'Failed to create child', error)
+        await showAlert(childToEdit ? '아이 수정에 실패했습니다.' : '아이 추가에 실패했습니다.', '오류')
       }
     }
+  }
+
+  const openEditForm = (child) => {
+    setChildToEdit(child)
+    setNewChildName(child.name)
+    setNewChildBirthDate(child.birthDate)
+    setNewChildMemo(child.memo || '')
+    setNewChildGroupName(child.groupName || '')
+    setShowAddForm(true)
+    setIsEditingList(false) // editing list close to show form
+    window.scrollTo({ top: 100, behavior: 'smooth' })
   }
 
   const handleViewResults = (childId) => {
@@ -210,8 +242,12 @@ function MyPage({ user }) {
                 <button
                   className="btn btn-primary"
                   onClick={() => {
-                    setShowAddForm(!showAddForm)
-                    setIsEditingList(false) // 추가 폼 열 때 편집 모드는 종료
+                    if (showAddForm) {
+                      resetFormValues()
+                    } else {
+                      setShowAddForm(true)
+                      setIsEditingList(false) // 추가 폼 열 때 편집 모드는 종료
+                    }
                   }}
                 >
                   {showAddForm ? '취소' : '+ 추가'}
@@ -221,7 +257,7 @@ function MyPage({ user }) {
 
             {showAddForm && (
               <form onSubmit={handleAddChild} className="add-child-form card">
-                <h3>새 아이 추가</h3>
+                <h3>{childToEdit ? '아이 정보 수정' : '새 아이 추가'}</h3>
                 <div className="form-group">
                   <label className="form-label">이름</label>
                   <input
@@ -264,7 +300,7 @@ function MyPage({ user }) {
                   />
                 </div>
                 <button type="submit" className="btn btn-primary">
-                  추가하기
+                  {childToEdit ? '수정 내용 저장' : '추가하기'}
                 </button>
               </form>
             )}
@@ -329,13 +365,22 @@ function MyPage({ user }) {
                     </div>
                     <div className="child-actions" style={{ flexWrap: 'wrap', gap: '8px' }}>
                       {isEditingList ? (
-                        <button
-                          className="btn btn-danger"
-                          style={{ width: '100%' }}
-                          onClick={() => openDeleteModal(child.childId, child.name)}
-                        >
-                          <FaTrash style={{ marginRight: '6px' }} /> 삭제 대상 선택
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                          <button
+                            className="btn btn-secondary"
+                            style={{ flex: 1 }}
+                            onClick={() => openEditForm(child)}
+                          >
+                            <FaEdit style={{ marginRight: '6px' }} /> 정보 수정
+                          </button>
+                          <button
+                            className="btn btn-danger"
+                            style={{ flex: 1 }}
+                            onClick={() => openDeleteModal(child.childId, child.name)}
+                          >
+                            <FaTrash style={{ marginRight: '6px' }} /> 삭제
+                          </button>
+                        </div>
                       ) : (
                         <>
                           <button

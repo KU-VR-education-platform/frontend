@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getMyChildren, createChild } from '../api/child'
+import { getMyChildren, createChild, unlinkChild } from '../api/child'
 import { getReportsByChildId } from '../api/report'
 import { getVrCode, cancelVrCode } from '../api/scenario'
 import { FaChartBar, FaFileAlt, FaClock, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa'
@@ -99,6 +99,25 @@ function MyPage({ user }) {
     } catch (error) {
       console.error(error)
       alert(error.response?.data?.message || '취소에 실패했습니다.')
+    }
+  }
+
+  const handleDeleteChild = async (childId, childName) => {
+    if (!window.confirm(`'${childName}' 아이를 목록에서 삭제하시겠습니까?\n(아이의 데이터는 완전히 지워지지 않으며 계정에서만 연결이 해제됩니다.)`)) {
+      return
+    }
+
+    try {
+      await unlinkChild(childId)
+      alert(`${childName} 아이가 삭제되었습니다.`)
+      // 삭제 후 목록 새로고침 및 선택 해제 (필요한 경우)
+      if (selectedChild === childId) {
+        setSelectedChild(null)
+      }
+      fetchChildren()
+    } catch (error) {
+      console.error('Failed to delete child', error)
+      alert('아이 삭제에 실패했습니다.')
     }
   }
 
@@ -221,7 +240,7 @@ function MyPage({ user }) {
                         <span className="stat-value">{child.inviteCode || '-'}</span>
                       </div>
                     </div>
-                    <div className="child-actions">
+                    <div className="child-actions" style={{ flexWrap: 'wrap', gap: '8px' }}>
                       <button
                         className="btn btn-primary"
                         onClick={() => handleViewResults(child.childId)}
@@ -258,6 +277,13 @@ function MyPage({ user }) {
                           시나리오 시작
                         </Link>
                       )}
+                      {/* 삭제 버튼 추가 */}
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleDeleteChild(child.childId, child.name)}
+                      >
+                        아이 삭제
+                      </button>
                     </div>
                   </div>
                 ))

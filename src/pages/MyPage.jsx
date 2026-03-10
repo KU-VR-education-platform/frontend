@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { getMyChildren, createChild, updateChild, unlinkChild } from '../api/child'
 import { getReportsByChildId } from '../api/report'
 import { getVrCode, cancelVrCode } from '../api/scenario'
-import { FaChartBar, FaFileAlt, FaClock, FaCheckCircle, FaExclamationTriangle, FaTrash, FaEdit } from 'react-icons/fa'
+import { FaChartBar, FaFileAlt, FaClock, FaCheckCircle, FaExclamationTriangle, FaTrash, FaEdit, FaTimes } from 'react-icons/fa'
 import { useCustomAlert } from '../components/CustomAlertContext'
 import './MyPage.css'
 

@@ -3,12 +3,14 @@ import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
 import { getScenarios, getVrCode, cancelVrCode } from '../api/scenario'
 import { getMyChildren } from '../api/child'
 import { FaVrCardboard, FaTimes } from 'react-icons/fa'
+import { useCustomAlert } from '../components/CustomAlertContext'
 import './ChildSelectPage.css'
 
 function ChildSelectPage({ user }) {
   const { scenarioId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
+  const { showAlert, showConfirm } = useCustomAlert()
   const initialSelectedChildId = location.state?.selectedChildId
 
   const [children, setChildren] = useState([])
@@ -55,7 +57,7 @@ function ChildSelectPage({ user }) {
       console.error(error)
       // 교육 진행 중 메시지 확인 (ErrorCode.SCENARIO_ALREADY_IN_PROGRESS 대응)
       const errorMessage = error.response?.data?.message || '코드 생성에 실패했습니다.'
-      alert(errorMessage)
+      await showAlert(errorMessage, '오류')
 
       if (initialSelectedChildId) {
         navigate('/scenario-select') // 이전 선택이 있었는데 실패하면 돌아감
@@ -96,7 +98,8 @@ function ChildSelectPage({ user }) {
   const handleCancelVrCode = async () => {
     if (!vrCode) return
 
-    if (!window.confirm('시나리오 준비를 취소하시겠습니까?\nVR 기기에서 코드를 입력하기 전까지만 취소가 가능합니다.')) {
+    const isConfirmed = await showConfirm('시나리오 준비를 취소하시겠습니까?\nVR 기기에서 코드를 입력하기 전까지만 취소가 가능합니다.', '취소 확인', '네, 취소할게요', '아니오')
+    if (!isConfirmed) {
       return
     }
 
@@ -104,7 +107,7 @@ function ChildSelectPage({ user }) {
       await cancelVrCode(vrCode)
       setVrCode(null)
       setSelectedChild(null)
-      alert('취소되었습니다.')
+      await showAlert('취소되었습니다.', '안내')
 
       // 만약 메인에서 바로 왔던 거라면 메인으로, 아니면 아이 선택으로
       if (initialSelectedChildId) {
@@ -113,7 +116,7 @@ function ChildSelectPage({ user }) {
     } catch (error) {
       console.error(error)
       const errorMessage = error.response?.data?.message || '취소에 실패했습니다.'
-      alert(errorMessage)
+      await showAlert(errorMessage, '오류')
     }
   }
 

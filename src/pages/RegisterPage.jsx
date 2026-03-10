@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { signup } from '../api/user'
+import { useCustomAlert } from '../components/CustomAlertContext'
 import './RegisterPage.css'
 
 function RegisterPage() {
   const navigate = useNavigate()
+  const { showAlert } = useCustomAlert()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -46,7 +48,7 @@ function RegisterPage() {
       })
 
       // 회원가입 성공 후 로그인 페이지로 이동
-      alert('회원가입이 완료되었습니다!')
+      await showAlert('회원가입이 완료되었습니다!', '가입 성공')
       navigate('/login')
     } catch (err) {
       console.error(err)

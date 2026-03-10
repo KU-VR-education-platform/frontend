@@ -4,10 +4,12 @@ import { getMyChildren, createChild, unlinkChild } from '../api/child'
 import { getReportsByChildId } from '../api/report'
 import { getVrCode, cancelVrCode } from '../api/scenario'
 import { FaChartBar, FaFileAlt, FaClock, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa'
+import { useCustomAlert } from '../components/CustomAlertContext'
 import './MyPage.css'
 
 function MyPage({ user }) {
   const navigate = useNavigate()
+  const { showAlert, showConfirm } = useCustomAlert()
   const [activeTab, setActiveTab] = useState('children') // 'children' or 'results'
   const [selectedChild, setSelectedChild] = useState(null)
 
@@ -17,6 +19,10 @@ function MyPage({ user }) {
   const [newChildBirthDate, setNewChildBirthDate] = useState('')
   const [newChildMemo, setNewChildMemo] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
+
+  // Delete Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [childToDelete, setChildToDelete] = useState(null)
 
   // Reports State
   const [reports, setReports] = useState([])
@@ -68,7 +74,7 @@ function MyPage({ user }) {
           birthDate: newChildBirthDate,
           memo: newChildMemo
         })
-        alert(`${newChildName} 아이가 추가되었습니다!`)
+        await showAlert(`${newChildName} 아이가 추가되었습니다!`, '추가 완료')
         setNewChildName('')
         setNewChildBirthDate('')
         setNewChildMemo('')
@@ -76,7 +82,7 @@ function MyPage({ user }) {
         fetchChildren()
       } catch (error) {
         console.error('Failed to create child', error)
-        alert('아이 추가에 실패했습니다.')
+        await showAlert('아이 추가에 실패했습니다.', '오류')
       }
     }
   }
@@ -87,38 +93,50 @@ function MyPage({ user }) {
   }
 
   const handleCancelSession = async (childId, scenarioId) => {
-    if (!window.confirm('교육 준비를 취소하시겠습니까?')) return
+    const isConfirmed = await showConfirm('교육 준비를 취소하시겠습니까?', '취소 확인', '네, 취소할게요', '아니오')
+    if (!isConfirmed) return
 
     try {
       // 1. VR 코드 조회
       const code = await getVrCode(childId, scenarioId)
       // 2. 취소 API 호출
       await cancelVrCode(code)
-      alert('취소되었습니다.')
+      await showAlert('취소되었습니다.', '안내')
       fetchChildren() // 목록 새로고침
     } catch (error) {
       console.error(error)
-      alert(error.response?.data?.message || '취소에 실패했습니다.')
+      await showAlert(error.response?.data?.message || '취소에 실패했습니다.', '오류')
     }
   }
 
-  const handleDeleteChild = async (childId, childName) => {
-    if (!window.confirm(`'${childName}' 아이를 목록에서 삭제하시겠습니까?\n(아이의 데이터는 완전히 지워지지 않으며 계정에서만 연결이 해제됩니다.)`)) {
-      return
-    }
+  const openDeleteModal = (childId, childName) => {
+    setChildToDelete({ id: childId, name: childName });
+    setShowDeleteModal(true);
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!childToDelete) return;
 
     try {
-      await unlinkChild(childId)
-      alert(`${childName} 아이가 삭제되었습니다.`)
-      // 삭제 후 목록 새로고침 및 선택 해제 (필요한 경우)
-      if (selectedChild === childId) {
+      await unlinkChild(childToDelete.id)
+      // 삭제 후 목록 새로고침 및 선택 해제
+      if (selectedChild === childToDelete.id) {
         setSelectedChild(null)
       }
       fetchChildren()
+      await showAlert(`${childToDelete.name} 아이가 삭제되었습니다.`, '삭제 완료')
     } catch (error) {
       console.error('Failed to delete child', error)
-      alert('아이 삭제에 실패했습니다.')
+      await showAlert('아이 삭제에 실패했습니다.', '오류')
+    } finally {
+      setShowDeleteModal(false)
+      setChildToDelete(null)
     }
+  }
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false)
+    setChildToDelete(null)
   }
 
   return (
@@ -280,7 +298,7 @@ function MyPage({ user }) {
                       {/* 삭제 버튼 추가 */}
                       <button
                         className="btn btn-danger"
-                        onClick={() => handleDeleteChild(child.childId, child.name)}
+                        onClick={() => openDeleteModal(child.childId, child.name)}
                       >
                         아이 삭제
                       </button>
@@ -365,6 +383,33 @@ function MyPage({ user }) {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Custom Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h3>아이 삭제 확인</h3>
+              </div>
+              <div className="modal-body">
+                <p className="modal-message">
+                  정말 <strong>{childToDelete?.name}</strong> 아이를 목록에서 삭제하시겠습니까?
+                </p>
+                <p className="modal-submessage">
+                  (아이의 데이터는 완전히 지워지지 않으며 계정에서만 연결이 해제됩니다.)
+                </p>
+              </div>
+              <div className="modal-actions">
+                <button className="btn btn-secondary" onClick={handleCancelDelete}>
+                  취소
+                </button>
+                <button className="btn btn-danger" onClick={handleConfirmDelete}>
+                  삭제하기
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

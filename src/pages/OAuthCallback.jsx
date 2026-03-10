@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { getMyInfo } from '../api/user'
+import { useCustomAlert } from '../components/CustomAlertContext'
 
 const OAuthCallback = () => {
     const navigate = useNavigate()
     const location = useLocation()
+    const { showAlert } = useCustomAlert()
     const processed = useRef(false) // StrictMode 중복 실행 방지
 
     useEffect(() => {
@@ -38,12 +40,12 @@ const OAuthCallback = () => {
 
                 } catch (error) {
                     console.error('User info fetch error:', error)
-                    alert('사용자 정보 로딩 실패. 다시 로그인해주세요.')
+                    await showAlert('사용자 정보 로딩 실패. 다시 로그인해주세요.', '오류')
                     localStorage.removeItem('user')
                     navigate('/login')
                 }
             } else {
-                alert('로그인 실패: 토큰이 없습니다.')
+                await showAlert('로그인 실패: 토큰이 없습니다.', '오류')
                 navigate('/login')
             }
         }

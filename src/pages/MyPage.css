@@ -607,6 +607,42 @@
   }
 }
 
+/* Add/Edit Child Modal Specific Styles */
+.add-child-modal {
+  text-align: left;
+  /* Reset text alignment for form elements */
+  max-width: 500px;
+}
+
+.add-child-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.add-child-modal .modal-header h3 {
+  margin: 0;
+}
+
+.add-child-modal .btn-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s ease;
+}
+
+.add-child-modal .btn-close:hover {
+  color: #111827;
+}
+
+.add-child-modal .modal-body {
+  margin-bottom: 24px;
+}
+
 /* Tag/Filter Styles */
 .tags-filter-container {
   display: flex;

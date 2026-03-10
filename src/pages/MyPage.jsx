@@ -255,55 +255,7 @@ function MyPage({ user }) {
               </div>
             </div>
 
-            {showAddForm && (
-              <form onSubmit={handleAddChild} className="add-child-form card">
-                <h3>{childToEdit ? '아이 정보 수정' : '새 아이 추가'}</h3>
-                <div className="form-group">
-                  <label className="form-label">이름</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="아이 이름"
-                    value={newChildName}
-                    onChange={(e) => setNewChildName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">생년월일</label>
-                  <input
-                    type="date"
-                    className="form-input"
-                    value={newChildBirthDate}
-                    onChange={(e) => setNewChildBirthDate(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">메모 (선택)</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="예: 특이사항 등"
-                    value={newChildMemo}
-                    onChange={(e) => setNewChildMemo(e.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">소속/태그 (선택)</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="예: 2026년, 무지개반, 태윤부모님"
-                    value={newChildGroupName}
-                    onChange={(e) => setNewChildGroupName(e.target.value)}
-                  />
-                </div>
-                <button type="submit" className="btn btn-primary">
-                  {childToEdit ? '수정 내용 저장' : '추가하기'}
-                </button>
-              </form>
-            )}
+
 
             {/* 태그 필터 영역 */}
             {tags.length > 0 && (
@@ -534,6 +486,78 @@ function MyPage({ user }) {
             </div>
           </div>
         )}
+        {/* Child Add/Edit Form Modal */}
+        {showAddForm && (
+          <div className="modal-overlay">
+            <div className="modal-content add-child-modal">
+              <div className="modal-header">
+                <h3>{childToEdit ? '아이 정보 수정' : '새 아이 추가'}</h3>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={resetFormValues}
+                  aria-label="닫기"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+              <form onSubmit={handleAddChild} className="add-child-form">
+                <div className="modal-body">
+                  <div className="form-group">
+                    <label className="form-label">이름</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="아이 이름"
+                      value={newChildName}
+                      onChange={(e) => setNewChildName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">생년월일</label>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={newChildBirthDate}
+                      onChange={(e) => setNewChildBirthDate(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">메모 (선택)</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="예: 특이사항 등"
+                      value={newChildMemo}
+                      onChange={(e) => setNewChildMemo(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">소속/태그 (선택)</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="예: 2026년, 무지개반, 태윤부모님"
+                      value={newChildGroupName}
+                      onChange={(e) => setNewChildGroupName(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="modal-actions">
+                  <button type="button" className="btn btn-secondary" onClick={resetFormValues}>
+                    취소
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    {childToEdit ? '저장하기' : '추가하기'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   )

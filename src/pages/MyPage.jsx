@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { getMyChildren, createChild, unlinkChild } from '../api/child'
 import { getReportsByChildId } from '../api/report'
 import { getVrCode, cancelVrCode } from '../api/scenario'
-import { FaChartBar, FaFileAlt, FaClock, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa'
+import { FaChartBar, FaFileAlt, FaClock, FaCheckCircle, FaExclamationTriangle, FaTrash, FaEdit } from 'react-icons/fa'
 import { useCustomAlert } from '../components/CustomAlertContext'
 import './MyPage.css'
 
@@ -18,7 +18,12 @@ function MyPage({ user }) {
   const [newChildName, setNewChildName] = useState('')
   const [newChildBirthDate, setNewChildBirthDate] = useState('')
   const [newChildMemo, setNewChildMemo] = useState('')
+  const [newChildGroupName, setNewChildGroupName] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
+  const [isEditingList, setIsEditingList] = useState(false) // Edit mode state
+
+  // Filter State
+  const [selectedTags, setSelectedTags] = useState([])
 
   // Delete Modal State
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -72,12 +77,14 @@ function MyPage({ user }) {
         await createChild({
           name: newChildName,
           birthDate: newChildBirthDate,
-          memo: newChildMemo
+          memo: newChildMemo,
+          groupName: newChildGroupName // 추가된 필드
         })
         await showAlert(`${newChildName} 아이가 추가되었습니다!`, '추가 완료')
         setNewChildName('')
         setNewChildBirthDate('')
         setNewChildMemo('')
+        setNewChildGroupName('')
         setShowAddForm(false)
         fetchChildren()
       } catch (error) {
@@ -139,6 +146,20 @@ function MyPage({ user }) {
     setChildToDelete(null)
   }
 
+  // Extract unique tags and filter children
+  const tags = [...new Set(children.map(c => c.groupName).filter(tag => tag && tag.trim() !== ''))]
+  const filteredChildren = selectedTags.length > 0
+    ? children.filter(c => selectedTags.includes(c.groupName))
+    : children;
+
+  const toggleTag = (tag) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter(t => t !== tag))
+    } else {
+      setSelectedTags([...selectedTags, tag])
+    }
+  }
+
   return (
     <div className="mypage">
       <header className="header">
@@ -179,12 +200,23 @@ function MyPage({ user }) {
           <div className="children-section">
             <div className="section-header">
               <h2>등록된 아이들</h2>
-              <button
-                className="btn btn-primary"
-                onClick={() => setShowAddForm(!showAddForm)}
-              >
-                {showAddForm ? '취소' : '+ 아이 추가'}
-              </button>
+              <div className="header-actions" style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  className={`btn ${isEditingList ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setIsEditingList(!isEditingList)}
+                >
+                  {isEditingList ? '완료' : <><FaEdit style={{ marginRight: '4px' }} />편집</>}
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setShowAddForm(!showAddForm)
+                    setIsEditingList(false) // 추가 폼 열 때 편집 모드는 종료
+                  }}
+                >
+                  {showAddForm ? '취소' : '+ 추가'}
+                </button>
+              </div>
             </div>
 
             {showAddForm && (
@@ -221,17 +253,51 @@ function MyPage({ user }) {
                     onChange={(e) => setNewChildMemo(e.target.value)}
                   />
                 </div>
+                <div className="form-group">
+                  <label className="form-label">소속/태그 (선택)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="예: 2026년, 무지개반, 태윤부모님"
+                    value={newChildGroupName}
+                    onChange={(e) => setNewChildGroupName(e.target.value)}
+                  />
+                </div>
                 <button type="submit" className="btn btn-primary">
                   추가하기
                 </button>
               </form>
             )}
 
+            {/* 태그 필터 영역 */}
+            {tags.length > 0 && (
+              <div className="tags-filter-container">
+                <span className="tags-label">소속 필터:</span>
+                <div className="tags-list">
+                  <button
+                    className={`tag-chip ${selectedTags.length === 0 ? 'active' : ''}`}
+                    onClick={() => setSelectedTags([])}
+                  >
+                    전체보기
+                  </button>
+                  {tags.map((tag, idx) => (
+                    <button
+                      key={idx}
+                      className={`tag-chip ${selectedTags.includes(tag) ? 'active' : ''}`}
+                      onClick={() => toggleTag(tag)}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="children-grid">
-              {children.length === 0 ? (
-                <div className="empty-message">등록된 아이가 없습니다.</div>
+              {filteredChildren.length === 0 ? (
+                <div className="empty-message">해당하는 아이가 없습니다.</div>
               ) : (
-                children.map((child) => (
+                filteredChildren.map((child) => (
                   <div key={child.childId} className={`child-card card ${child.isInProgress ? 'in-progress' : ''}`}>
                     <div className="child-header">
                       <div className="child-avatar">
@@ -239,7 +305,10 @@ function MyPage({ user }) {
                         {child.isInProgress && <div className="progress-badge">진행중</div>}
                       </div>
                       <div className="child-info">
-                        <h3>{child.name}</h3>
+                        <h3>
+                          {child.name}
+                          {child.groupName && <span className="child-tag-badge">{child.groupName}</span>}
+                        </h3>
                         <p>생일: {child.birthDate}</p>
                         {child.isInProgress && <p className="status-text">교육이 진행 중입니다</p>}
                       </div>
@@ -259,49 +328,54 @@ function MyPage({ user }) {
                       </div>
                     </div>
                     <div className="child-actions" style={{ flexWrap: 'wrap', gap: '8px' }}>
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => handleViewResults(child.childId)}
-                      >
-                        기록 보기
-                      </button>
-                      {child.isInProgress ? (
+                      {isEditingList ? (
+                        <button
+                          className="btn btn-danger"
+                          style={{ width: '100%' }}
+                          onClick={() => openDeleteModal(child.childId, child.name)}
+                        >
+                          <FaTrash style={{ marginRight: '6px' }} /> 삭제 대상 선택
+                        </button>
+                      ) : (
                         <>
-                          <button className="btn btn-secondary disabled" disabled>
-                            {child.vrCodeStatus === 'ISSUED' ? '인증 대기 중' : '교육 진행 중'}
-                          </button>
-                          <Link
-                            to={`/child-select/${child.activeScenarioId}`}
-                            state={{ selectedChildId: child.childId }}
+                          <button
                             className="btn btn-primary"
+                            onClick={() => handleViewResults(child.childId)}
                           >
-                            VR 코드 보기
-                          </Link>
-                          {child.vrCodeStatus === 'ISSUED' && (
-                            <button
-                              className="btn btn-danger"
-                              onClick={() => handleCancelSession(child.childId, child.activeScenarioId)}
+                            기록 보기
+                          </button>
+                          {child.isInProgress ? (
+                            <>
+                              <button className="btn btn-secondary disabled" disabled>
+                                {child.vrCodeStatus === 'ISSUED' ? '인증 대기 중' : '교육 진행 중'}
+                              </button>
+                              <Link
+                                to={`/child-select/${child.activeScenarioId}`}
+                                state={{ selectedChildId: child.childId }}
+                                className="btn btn-primary"
+                              >
+                                VR 코드 보기
+                              </Link>
+                              {child.vrCodeStatus === 'ISSUED' && (
+                                <button
+                                  className="btn btn-danger"
+                                  onClick={() => handleCancelSession(child.childId, child.activeScenarioId)}
+                                >
+                                  취소
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            <Link
+                              to="/scenario-select"
+                              state={{ selectedChildId: child.childId }}
+                              className="btn btn-secondary"
                             >
-                              취소
-                            </button>
+                              시나리오 시작
+                            </Link>
                           )}
                         </>
-                      ) : (
-                        <Link
-                          to="/scenario-select"
-                          state={{ selectedChildId: child.childId }}
-                          className="btn btn-secondary"
-                        >
-                          시나리오 시작
-                        </Link>
                       )}
-                      {/* 삭제 버튼 추가 */}
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => openDeleteModal(child.childId, child.name)}
-                      >
-                        아이 삭제
-                      </button>
                     </div>
                   </div>
                 ))
@@ -405,7 +479,10 @@ function MyPage({ user }) {
                 <button className="btn btn-secondary" onClick={handleCancelDelete}>
                   취소
                 </button>
-                <button className="btn btn-danger" onClick={handleConfirmDelete}>
+                <button
+                  className="btn btn-danger"
+                  onClick={handleConfirmDelete}
+                >
                   삭제하기
                 </button>
               </div>

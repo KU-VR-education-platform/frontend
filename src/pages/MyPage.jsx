@@ -47,7 +47,7 @@ function MyPage({ user }) {
       fetchReports(selectedChild)
     } else if (children.length > 0) {
       // Default to first child if none selected
-      setSelectedChild(children[0].id)
+      setSelectedChild(children[0].childId)
     }
   }, [selectedChild, children])
 
